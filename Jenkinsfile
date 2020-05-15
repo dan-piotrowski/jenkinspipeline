@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     parameters {
-         string(name: 'tomcat_dev', defaultValue: 'localhost:/home/daniel/apache-tomcat-8.0.27', description: 'Staging Server')
-         string(name: 'tomcat_prod', defaultValue: 'localhost:/home/daniel/apache-tomcat-8.0.27_prod', description: 'Production Server')
+         string(name: 'tomcat_dev', defaultValue: '/home/daniel/apache-tomcat-8.0.27', description: 'Staging Server')
+         string(name: 'tomcat_prod', defaultValue: '/home/daniel/apache-tomcat-8.0.27_prod', description: 'Production Server')
     }
 
     triggers {
@@ -27,13 +27,13 @@ stages{
             parallel{
                 stage ('Deploy to Staging'){
                     steps {
-                        sh "cp **/target/*.war ${params.tomcat_dev}/webapps"
+                        sh "cp **/target/*.war ${params.tomcat_dev}/webapps/"
                     }
                 }
 
                 stage ("Deploy to Production"){
                     steps {
-                        sh "cp **/target/*.war ${params.tomcat_prod}/webapps"
+                        sh "cp **/target/*.war ${params.tomcat_prod}/webapps/"
                     }
                 }
             }
