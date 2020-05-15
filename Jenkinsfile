@@ -1,20 +1,16 @@
 pipeline {
     agent any
-    
-    parameters { 
-         string(name: 'tomcat_dev', defaultValue: '35.166.210.154', description: 'Staging Server')
-         string(name: 'tomcat_prod', defaultValue: '34.209.233.6', description: 'Production Server')
-    } 
 
-    tools{
-        maven 'localMaven'
+    parameters {
+         string(name: 'tomcat_dev', defaultValue: '/home/daniel/apache-tomcat-8.0.27', description: 'Staging Server')
+         string(name: 'tomcat_prod', defaultValue: '/home/daniel/apache-tomcat-8.0.27_prod', description: 'Production Server')
     }
 
     triggers {
-         pollSCM('* * * * *') // Polling Source Control
+         pollSCM('* * * * *')
      }
 
-    stages{
+stages{
         stage('Build'){
             steps {
                 sh 'mvn clean package'
@@ -27,30 +23,20 @@ pipeline {
             }
         }
 
-        stage ('Deploy to Staging'){
-            steps {
-                build job: 'deploy-to-staging'
-            }
-        }
-
-        stage ('Deploy to Production'){
-            steps{
-                timeout(time:5, unit:'DAYS'){
-                    input message:'Approve PRODUCTION Deployment?'
+        stage ('Deployments'){
+            parallel{
+                stage ('Deploy to Staging'){
+                    steps {
+                        sh "cp **/target/*.war ${params.tomcat_dev}/webapps"
+                    }
                 }
 
-                build job: 'deploy-to-prod'
-            }
-            post {
-                success {
-                    echo 'Code deployed to Production.'
-                }
-
-                failure {
-                    echo ' Deployment failed.'
+                stage ("Deploy to Production"){
+                    steps {
+                        sh "cp **/target/*.war ${params.tomcat_prod}/webapps"
+                    }
                 }
             }
         }
-        
     }
 }
